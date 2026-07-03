@@ -33,7 +33,7 @@ namespace RevitMCPCommandSet.Commands
                     _handler.Categories = parameters?["categories"]?.ToObject<List<string>>() ?? new List<string>();
                     _handler.Scope = parameters?["scope"]?.Value<string>() ?? "whole_model";
                     _handler.RenameTypes = parameters?["renameTypes"]?.Value<bool>() ?? false;
-                    _handler.DryRun = parameters?["dryRun"]?.Value<bool>() ?? false;
+                    _handler.DryRun = parameters?["dryRun"]?.Value<bool>() ?? true;
 
                     _handler.SetParameters();
 

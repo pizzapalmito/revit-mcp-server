@@ -16,7 +16,7 @@ namespace RevitMCPCommandSet.Services
         public string ReplaceText { get; set; } = "";
         public List<string> ViewTypes { get; set; } = new List<string>();
         public string FilterName { get; set; } = "";
-        public bool DryRun { get; set; } = false;
+        public bool DryRun { get; set; } = true;
         public AIResult<object> Result { get; private set; }
 
         public void SetParameters(string operation, string prefix, string suffix, string findText, string replaceText, List<string> viewTypes, string filterName, bool dryRun)

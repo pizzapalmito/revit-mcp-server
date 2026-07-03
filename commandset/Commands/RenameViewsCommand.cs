@@ -31,7 +31,7 @@ namespace RevitMCPCommandSet.Commands
                         parameters?["replaceText"]?.Value<string>() ?? "",
                         parameters?["viewTypes"]?.ToObject<List<string>>() ?? new List<string>(),
                         parameters?["filterName"]?.Value<string>() ?? "",
-                        parameters?["dryRun"]?.Value<bool>() ?? false
+                        parameters?["dryRun"]?.Value<bool>() ?? true
                     );
 
                     if (RaiseAndWaitForCompletion(120000)) // 2-minute timeout for large model scans

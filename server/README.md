@@ -32,9 +32,9 @@ Claude Desktop → Settings → Developer → Edit Config → `claude_desktop_co
 
 Restart Claude Desktop. When you see the hammer icon, the MCP server is connected.
 
-## Supported Tools (124)
+## Supported Tools (138)
 
-See the [full tool list](https://github.com/LuDattilo/revit-mcp-server#supported-tools-124) in the main README for the complete catalog organized by category:
+See the [full tool list](https://github.com/LuDattilo/revit-mcp-server#supported-tools-138) in the main README for the complete catalog organized by category:
 
 - **Project & Model Info** — project metadata, views, parameters, phases, worksets, links
 - **Model Analysis** — AI element filter, health check, clash detection, measurements

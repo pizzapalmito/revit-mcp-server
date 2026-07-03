@@ -15,7 +15,7 @@ namespace RevitMCPCommandSet.Services.DataExtraction
 
         public string FilePath { get; set; } = "";
         public string SheetName { get; set; } = "";
-        public bool DryRun { get; set; } = false;
+        public bool DryRun { get; set; } = true;
         public object Result { get; private set; }
 
         public void SetParameters(string filePath, string sheetName, bool dryRun)

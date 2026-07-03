@@ -15,7 +15,7 @@ namespace RevitMCPCommandSet.Services.DataExtraction
         public List<long> TargetElementIds { get; set; } = new List<long>();
         public List<string> ParameterNames { get; set; } = new List<string>(); // empty = all writable
         public bool IncludeType { get; set; } = false;
-        public bool DryRun { get; set; } = false;
+        public bool DryRun { get; set; } = true;
 
         public AIResult<object> Result { get; private set; }
         public bool TaskCompleted { get; private set; }

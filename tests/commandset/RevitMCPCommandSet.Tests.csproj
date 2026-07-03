@@ -3,9 +3,18 @@
     <OutputType>Exe</OutputType>
     <Configurations>Debug.R25;Debug.R26;Debug.R27</Configurations>
     <Configurations>$(Configurations);Release.R25;Release.R26;Release.R27</Configurations>
+    <TargetPlatformVersion>10.0.19041.0</TargetPlatformVersion>
+    <CommandSetConfiguration>$([System.String]::Copy('$(Configuration)').Replace('.', ' '))</CommandSetConfiguration>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(Configuration.Contains('R25')) Or $(Configuration.Contains('R26'))">
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(Configuration.Contains('R27'))">
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Nice3point.Revit.Api.RevitAPI" Version="$(RevitVersion).*" />
     <PackageReference Include="Nice3point.TUnit.Revit" Version="$(RevitVersion).*" />
+    <ProjectReference Include="..\..\commandset\RevitMCPCommandSet.csproj" AdditionalProperties="Configuration=$(CommandSetConfiguration)" />
   </ItemGroup>
 </Project>

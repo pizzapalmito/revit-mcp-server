@@ -13,7 +13,7 @@ mcp-servers-for-revit enables AI clients like Claude, Cline, and other MCP-compa
 
 ## Key Features
 
-- **124 MCP tools** — project info, model health, clash detection, element CRUD, batch operations, data export (PDF/DWG/IFC/CSV)
+- **138 MCP tools** — project info, model health, clash detection, element CRUD, batch operations, data export (PDF/DWG/IFC/CSV)
 - **Revit 2023, 2024, 2025, 2026, 2027** — fully tested on all five versions
 - **Language-independent** — works with any Revit UI language (English, Italian, French, German, etc.) using BuiltInCategory resolution
 - **Built-in Claude chat panel** — dockable panel inside Revit with direct AI access (Anthropic API, extended thinking enabled)
@@ -31,7 +31,7 @@ flowchart LR
     Revit["Revit API"]
 
     Client <-->|stdio| Server
-    Server <-->|TCP :8080| Plugin
+    Server <-->|TCP :8080-8089| Plugin
     Plugin -->|loads| CommandSet
     CommandSet -->|executes| Revit
 ```
@@ -39,7 +39,7 @@ flowchart LR
 | Component | Language | Role |
 |-----------|----------|------|
 | **MCP Server** (`server/`) | TypeScript | Translates AI tool calls into JSON-RPC messages over TCP |
-| **Revit Plugin** (`plugin/`) | C# | Runs inside Revit, listens on `localhost:8080`, dispatches commands |
+| **Revit Plugin** (`plugin/`) | C# | Runs inside Revit, listens on `localhost:8080` or the next available port through `8089`, dispatches commands |
 | **Command Set** (`commandset/`) | C# | Implements Revit API operations, returns structured results |
 
 ## Requirements
@@ -185,7 +185,7 @@ Click **"Revit MCP Switch"** to start the TCP server. When the status indicator 
 
 All tools work across all versions. The command set uses compile-time constants (`REVIT2023`, `REVIT2024`, etc.) to handle API differences between versions (e.g., `ElementId` is `long` in R24+, `int` in R23).
 
-## Supported Tools (124)
+## Supported Tools (138)
 
 ### Project & Model Info
 
@@ -302,7 +302,7 @@ All tools work across all versions. The command set uses compile-time constants 
 
 | Tool | Description |
 | ---- | ----------- |
-| `send_code_to_revit` | Execute C# code inside Revit. Variables: `document` (Document), `parameters` (object[]). Auto-imports: System, System.Linq, Autodesk.Revit.DB/UI, System.Collections.Generic. Use `return` to send results. Mode `auto` wraps in Transaction, `none` for manual |
+| `send_code_to_revit` | Execute C# code inside Revit. Variables: `document` (Document), `parameters` (object[]). Auto-imports: System, System.Linq, Autodesk.Revit.DB/UI, System.Collections.Generic. Use `return` to send results. Mode `auto` wraps in Transaction, `none` for manual. Blocks filesystem, network, process, registry, emit, and native interop APIs. |
 | `store_project_data` | Store project metadata in local database |
 | `store_room_data` | Store room metadata in local database |
 | `query_stored_data` | Query stored project and room data |
@@ -322,9 +322,9 @@ The Revit plugin includes a dockable chat panel that connects directly to the An
 |------------|---------|
 | **Windows only** | Revit runs only on Windows; macOS/Linux are not supported |
 | **Single model** | The plugin operates on the active document only; background documents are not accessible |
-| **TCP port 8080** | The plugin listens on `localhost:8080`; if the port is occupied, the server won't start |
+| **TCP port range** | The plugin tries `localhost:8080` first, then falls back through `8089` and writes the chosen port to `mcp-port.txt` for the MCP server |
 | **No undo integration** | Operations executed by AI tools create standard Revit transactions but are not grouped into a single undo step |
-| **`send_code_to_revit`** | May fail if third-party addins cause assembly conflicts (e.g., duplicate DLL references) |
+| **`send_code_to_revit`** | May fail if third-party addins cause assembly conflicts (e.g., duplicate DLL references). It also blocks `System.IO`, `System.Net`, `System.Diagnostics.Process`, `Microsoft.Win32`, `System.Reflection.Emit`, and `System.Runtime.InteropServices`. |
 | **Parameter names are localized** | Revit parameter names depend on UI language. Use BuiltInCategory names (e.g., `OST_Walls`) for categories. The command set resolves categories automatically, but parameter names must match the Revit language |
 | **No streaming** | Tool results are returned as a single response; large results (e.g., exporting thousands of elements) may take time |
 | **Anthropic API key** | The built-in chat panel requires an Anthropic API key. External MCP clients (Claude Code, Claude Desktop) use their own authentication |
@@ -352,7 +352,7 @@ The Revit plugin includes a dockable chat panel that connects directly to the An
 ### "Connection refused" when using Claude Desktop or Claude Code
 
 - Ensure Revit is open and the MCP Switch is **ON** (green indicator)
-- Check that port 8080 is not used by another application: `netstat -an | findstr 8080`
+- If connection still fails, check whether all ports 8080-8089 are occupied: `netstat -an | findstr 808`
 
 ### Other common issues
 

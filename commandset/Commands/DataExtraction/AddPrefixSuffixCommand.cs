@@ -31,7 +31,7 @@ namespace RevitMCPCommandSet.Commands.DataExtraction
                     _handler.Scope = parameters?["scope"]?.Value<string>() ?? "whole_model";
                     _handler.SkipEmpty = parameters?["skipEmpty"]?.Value<bool>() ?? true;
                     _handler.FilterValue = parameters?["filterValue"]?.Value<string>() ?? "";
-                    _handler.DryRun = parameters?["dryRun"]?.Value<bool>() ?? false;
+                    _handler.DryRun = parameters?["dryRun"]?.Value<bool>() ?? true;
 
                     _handler.SetParameters();
 

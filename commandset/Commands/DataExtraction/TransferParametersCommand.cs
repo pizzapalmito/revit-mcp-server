@@ -27,7 +27,7 @@ namespace RevitMCPCommandSet.Commands.DataExtraction
                     _handler.TargetElementIds = parameters?["targetElementIds"]?.ToObject<List<long>>() ?? throw new ArgumentException("targetElementIds is required");
                     _handler.ParameterNames = parameters?["parameterNames"]?.ToObject<List<string>>() ?? new List<string>();
                     _handler.IncludeType = parameters?["includeType"]?.Value<bool>() ?? false;
-                    _handler.DryRun = parameters?["dryRun"]?.Value<bool>() ?? false;
+                    _handler.DryRun = parameters?["dryRun"]?.Value<bool>() ?? true;
 
                     _handler.SetParameters();
 

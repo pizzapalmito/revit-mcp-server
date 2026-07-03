@@ -34,7 +34,7 @@ Complete guide to install and configure **mcp-servers-for-revit** on Autodesk Re
 - **OS**: Windows 10/11 (64-bit)
 - **RAM**: Minimum 8 GB (16 GB recommended with Revit open)
 - **Disk**: ~150 MB for plugin + server + bundled Node.js runtime
-- **Network**: TCP port **8080** available on localhost
+- **Network**: one localhost TCP port available in the **8080-8089** range
 
 ### Additional Requirements for Building from Source
 
@@ -291,7 +291,7 @@ setx ANTHROPIC_API_KEY "sk-ant-..."
 ### 2. Start the MCP Service
 
 1. Click **"Revit MCP Switch"** in the ribbon
-2. The service starts on TCP port 8080
+2. The service starts on TCP port 8080, or the next available port through 8089
 3. The indicator in the chat panel turns green: **"MCP Online"**
 
 ### 3. Connection Test
@@ -358,8 +358,8 @@ dotnet build mcp-servers-for-revit.sln -c "Debug R26"
 ### "MCP Offline" in the chat panel
 
 - Click **"Revit MCP Switch"** to start the service
-- Verify that port 8080 is not occupied by another program
-- Check the Windows firewall (it must allow local connections on port 8080)
+- Verify that at least one port in the 8080-8089 range is available
+- Check the Windows firewall (it must allow local connections on localhost ports 8080-8089)
 
 ### Claude cannot connect to tools
 
@@ -380,8 +380,8 @@ dotnet build mcp-servers-for-revit.sln -c "Debug R26"
 
 ### Port 8080 already in use
 
-If another program is using port 8080, check with:
+The plugin now falls back from 8080 through 8089 and writes the selected port to `mcp-port.txt`. If Claude still cannot connect, check the range with:
 ```bash
-netstat -ano | findstr :8080
+netstat -ano | findstr :808
 ```
-Close the program occupying the port, or change the port in the source code (`SocketService.cs` and `SocketClient.ts`).
+Close programs occupying all ports in the range, then restart the MCP Switch.

@@ -22,7 +22,7 @@ namespace RevitMCPCommandSet.Services
         public List<string> Categories { get; set; } = new List<string>();
         public string Scope { get; set; } = "whole_model";
         public bool RenameTypes { get; set; } = false;
-        public bool DryRun { get; set; } = false;
+        public bool DryRun { get; set; } = true;
 
         public AIResult<object> Result { get; private set; }
         public bool TaskCompleted { get; private set; }

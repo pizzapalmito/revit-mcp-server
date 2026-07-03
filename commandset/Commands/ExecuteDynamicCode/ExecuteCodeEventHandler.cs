@@ -52,6 +52,10 @@ namespace RevitMCPCommandSet.Commands.ExecuteDynamicCode
                 var doc = app.ActiveUIDocument.Document;
                 ResultInfo = new ExecutionResultInfo();
 
+                var validation = CodeSandbox.Validate(_generatedCode);
+                if (!validation.IsAllowed)
+                    throw new InvalidOperationException(validation.Message);
+
                 if (_transactionMode == TransactionModeNone)
                 {
                     // Let user code manage its own transactions

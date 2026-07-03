@@ -20,7 +20,7 @@ namespace RevitMCPCommandSet.Services.DataExtraction
         public string FindText { get; set; } = "";
         public string ReplaceText { get; set; } = "";
         public bool OnlyEmpty { get; set; } = false; // only modify empty values
-        public bool DryRun { get; set; } = false;
+        public bool DryRun { get; set; } = true;
 
         public AIResult<object> Result { get; private set; }
         public bool TaskCompleted { get; private set; }
