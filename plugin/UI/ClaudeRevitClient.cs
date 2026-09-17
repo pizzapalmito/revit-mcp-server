@@ -18,7 +18,6 @@ namespace revit_mcp_plugin.UI
         private string _apiKey;
         private const string ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
         private string _model = "claude-sonnet-4-6";
-        private const int MCP_PORT = 8080;
         private CancellationTokenSource _cts;
 
         public void Cancel()
@@ -281,12 +280,18 @@ RULES:
         {
             try
             {
+                LocalMcpConnectionInfo connectionInfo;
+                string connectionError;
+                if (!LocalMcpConnectionInfo.TryRead(out connectionInfo, out connectionError))
+                    return "MCP command failed: " + connectionError;
+
                 var jsonRpc = new JObject
                 {
                     ["jsonrpc"] = "2.0",
                     ["id"] = Guid.NewGuid().ToString(),
                     ["method"] = commandName,
-                    ["params"] = parameters
+                    ["params"] = parameters,
+                    ["authToken"] = connectionInfo.Token
                 };
 
                 string request = jsonRpc.ToString(Formatting.None);
@@ -294,7 +299,7 @@ RULES:
                 using (var client = new TcpClient())
                 {
                     // Connect with timeout
-                    var connectTask = client.ConnectAsync("127.0.0.1", MCP_PORT);
+                    var connectTask = client.ConnectAsync("127.0.0.1", connectionInfo.Port);
                     if (await Task.WhenAny(connectTask, Task.Delay(10000)) != connectTask)
                         return "MCP command failed: Connection timeout (server not responding)";
                     await connectTask; // propagate any connection exception

@@ -1,0 +1,3 @@
+[submodule "third_party/pySC"]
+	path = third_party/pySC
+	url = https://github.com/schauh11/pySC.git

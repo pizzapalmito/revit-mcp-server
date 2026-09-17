@@ -64,6 +64,10 @@ flowchart LR
 | **Node.js 18+** | For the MCP server |
 | **Revit API assemblies** | Installed with Revit (referenced automatically via NuGet) |
 
+### Electrical MEP tools
+
+The Electrical MEP foundation uses a pinned [pySC](https://github.com/schauh11/pySC) dependency and a session-aware pyRevit extension installer. See [Electrical MEP setup](docs/electrical-mep.md).
+
 ## Quick Start
 
 ### 1. Install the Revit plugin
