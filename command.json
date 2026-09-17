@@ -195,6 +195,11 @@
       "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
     },
     {
+      "commandName": "get_electrical_model_summary",
+      "description": "Read-only electrical inventory: equipment, fixtures, conduits, circuits, and selected electrical elements",
+      "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"
+    },
+    {
       "commandName": "create_schedule",
       "description": "Create schedule views with fields, filters, and sorting",
       "assemblyPath": "RevitMCPCommandSet/{VERSION}/RevitMCPCommandSet.dll"

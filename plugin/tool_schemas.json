@@ -4022,6 +4022,22 @@
     }
   },
   {
+    "name": "get_electrical_model_summary",
+    "description": "Read a non-destructive inventory of the active Revit model's electrical equipment, fixtures, conduits, circuits, and optionally selected electrical elements. Use this before an electrical modification to establish scope. This tool does not make any model changes.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "includeSelectedElements": {
+          "type": "boolean",
+          "default": true,
+          "description": "Include details for currently selected electrical elements. Default: true."
+        }
+      },
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  {
     "name": "get_schedule_data",
     "description": "Read data from an existing schedule view.",
     "input_schema": {
