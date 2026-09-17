@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Newtonsoft.Json;
 using RevitMCPSDK.API.Interfaces;
+using RevitMCPCommandSet.Helpers;
 
 namespace RevitMCPCommandSet.Commands.ExecuteDynamicCode
 {
@@ -51,6 +52,13 @@ namespace RevitMCPCommandSet.Commands.ExecuteDynamicCode
             {
                 var doc = app.ActiveUIDocument.Document;
                 ResultInfo = new ExecutionResultInfo();
+
+                if (!ConfirmationHelper.ConfirmAiCodeExecution())
+                {
+                    ResultInfo.Success = false;
+                    ResultInfo.ErrorMessage = "AI-generated code execution was cancelled by the user.";
+                    return;
+                }
 
                 if (_transactionMode == TransactionModeNone)
                 {

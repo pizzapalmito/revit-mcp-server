@@ -5,7 +5,7 @@ echo   ================================================================
 echo     Revit MCP Plugin - Uninstaller
 echo   ================================================================
 echo.
-powershell -ExecutionPolicy Bypass -File "%~dp0scripts\install.ps1" -Uninstall
+powershell -NoProfile -ExecutionPolicy RemoteSigned -File "%~dp0scripts\install.ps1" -Uninstall
 echo.
 echo   Press any key to close.
 pause >nul

@@ -21,5 +21,23 @@ namespace RevitMCPCommandSet.Helpers
 
             return dialog.Show() == TaskDialogResult.Yes;
         }
+
+        /// <summary>
+        /// Requires an explicit in-product acknowledgement before executing
+        /// arbitrary code supplied by an MCP client.
+        /// </summary>
+        public static bool ConfirmAiCodeExecution()
+        {
+            var dialog = new TaskDialog("MCP Security Confirmation")
+            {
+                MainInstruction = "Run AI-generated C# code?",
+                MainContent = "This code runs with your Revit and Windows permissions. " +
+                              "It can modify the model and access files available to your account.",
+                CommonButtons = TaskDialogCommonButtons.Yes | TaskDialogCommonButtons.No,
+                DefaultButton = TaskDialogResult.No
+            };
+
+            return dialog.Show() == TaskDialogResult.Yes;
+        }
     }
 }

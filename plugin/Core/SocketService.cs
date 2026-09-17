@@ -23,6 +23,9 @@ namespace revit_mcp_plugin.Core
         private Thread _listenerThread;
         private volatile bool _isRunning;
         private int _port = 8080;
+        private int _activeClientCount;
+        private const int MaxConcurrentClients = 4;
+        private const int MaxRequestCharacters = 1024 * 1024;
         private UIApplication _uiApp;
         private ICommandRegistry _commandRegistry;
         private ILogger _logger;
@@ -177,13 +180,16 @@ namespace revit_mcp_plugin.Core
                 _listener = new TcpListener(IPAddress.Loopback, port);
                 _listener.Start();
 
+                // Set this before starting the thread; otherwise the new thread can
+                // observe false and exit before it begins accepting connections.
+                _isRunning = true;
+
                 _listenerThread = new Thread(ListenForClients)
                 {
                     IsBackground = true
                 };
                 _listenerThread.Start();
 
-                _isRunning = true;
                 McpLogger.Info("SocketService", $"Server started on port {port}");
             }
             catch (Exception ex)
@@ -228,11 +234,26 @@ namespace revit_mcp_plugin.Core
                 {
                     TcpClient client = _listener.AcceptTcpClient();
 
-                    Thread clientThread = new Thread(HandleClientCommunication)
+                    if (Interlocked.Increment(ref _activeClientCount) > MaxConcurrentClients)
                     {
-                        IsBackground = true
-                    };
-                    clientThread.Start(client);
+                        Interlocked.Decrement(ref _activeClientCount);
+                        McpLogger.Warn("SocketService", "Rejected client: connection limit reached");
+                        client.Close();
+                        continue;
+                    }
+
+                    Thread clientThread = new Thread(() =>
+                    {
+                        try
+                        {
+                            HandleClientCommunication(client);
+                        }
+                        finally
+                        {
+                            Interlocked.Decrement(ref _activeClientCount);
+                        }
+                    }) { IsBackground = true };
+                    clientThread.Start();
                 }
             }
             catch (SocketException ex)
@@ -255,6 +276,7 @@ namespace revit_mcp_plugin.Core
 
             try
             {
+                stream.ReadTimeout = 120000;
                 byte[] buffer = new byte[65536];
 
                 while (_isRunning && tcpClient.Connected)
@@ -273,6 +295,12 @@ namespace revit_mcp_plugin.Core
                     if (bytesRead == 0)
                         break;
 
+                    if (messageBuffer.Length + bytesRead > MaxRequestCharacters)
+                    {
+                        McpLogger.Warn("SocketService", "Rejected client request exceeding size limit");
+                        break;
+                    }
+
                     messageBuffer.Append(Encoding.UTF8.GetString(buffer, 0, bytesRead));
 
                     // Process all complete newline-delimited messages in the buffer.
@@ -286,7 +314,6 @@ namespace revit_mcp_plugin.Core
                         if (string.IsNullOrEmpty(message))
                             continue;
 
-                        System.Diagnostics.Trace.WriteLine($"Received message: {message}");
                         string response = ProcessJsonRPCRequest(message);
 
                         // Send response with newline delimiter.

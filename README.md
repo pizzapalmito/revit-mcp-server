@@ -70,11 +70,9 @@ flowchart LR
 
 #### Option A: Automatic install (recommended)
 
-Open PowerShell and paste this command:
-
-```powershell
-powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/LuDattilo/revit-mcp-server/main/scripts/install.ps1 | iex"
-```
+Download a versioned release from GitHub, extract it, review its contents, and run
+`INSTALLA.bat` from the extracted folder. Do not pipe a remotely fetched PowerShell
+script into `iex` or bypass your execution policy.
 
 The script:
 - Detects installed Revit versions automatically

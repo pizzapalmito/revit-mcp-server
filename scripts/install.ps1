@@ -46,9 +46,9 @@
 .EXAMPLE
     .\install.ps1 -Uninstall
 
-.EXAMPLE
-    powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/LuDattilo/revit-mcp-server/main/scripts/install.ps1 | iex"
-    # One-liner install directly from GitHub
+.SECURITY
+    Download a versioned release, inspect it, and run this local script. Do not
+    execute a PowerShell script streamed from a mutable remote branch.
 #>
 param(
     [ValidateSet('2023','2024','2025','2026','2027')]
