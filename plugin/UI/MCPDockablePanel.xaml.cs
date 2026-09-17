@@ -74,7 +74,9 @@ namespace revit_mcp_plugin.UI
                 if (running == _lastStatus) return;
                 _lastStatus = running;
                 StatusIndicator.Fill = running ? BrushOnline : BrushOffline;
-                StatusText.Text = running ? "MCP Online" : "MCP Offline";
+                StatusText.Text = running
+                    ? $"MCP Online · localhost:{Core.SocketService.Instance.Port}"
+                    : "MCP Offline · start Revit MCP Switch";
                 StatusText.Foreground = running ? BrushOnline : BrushOfflineText;
             }
             catch { }

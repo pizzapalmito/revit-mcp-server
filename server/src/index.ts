@@ -11,6 +11,9 @@ const { version } = require("../package.json");
 const server = new McpServer({
   name: "mcp-server-for-revit",
   version,
+}, {
+  instructions:
+    "Work safely with the active Revit model. First inspect the model with scoped read tools, then state the exact target and planned change. Do not mutate or delete model data until the user confirms the scope; use dry-run or preview options when available. Keep requests and responses narrow, verify each completed change with a read tool, and summarize the result. Never use send_code_to_revit unless the user explicitly requests custom code and confirms the in-Revit safety prompt.",
 });
 
 // Start server
