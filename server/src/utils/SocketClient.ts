@@ -4,6 +4,7 @@ import { randomUUID } from "crypto";
 export class RevitClientConnection {
   host: string;
   port: number;
+  authToken: string;
   socket: net.Socket;
   isConnected: boolean = false;
   responseCallbacks: Map<string, (response: string) => void> = new Map();
@@ -11,9 +12,10 @@ export class RevitClientConnection {
   buffer: string = "";
   public defaultTimeout: number = 120000;
 
-  constructor(host: string, port: number) {
+  constructor(host: string, port: number, authToken: string) {
     this.host = host;
     this.port = port;
+    this.authToken = authToken;
     this.socket = new net.Socket();
     this.setupSocketListeners();
   }
@@ -129,6 +131,7 @@ export class RevitClientConnection {
           method: command,
           params: params,
           id: requestId,
+          authToken: this.authToken,
         };
 
         // Store callback

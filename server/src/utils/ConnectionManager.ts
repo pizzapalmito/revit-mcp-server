@@ -10,23 +10,38 @@ const MAX_RETRIES = 3;
 const BACKOFF_MS = [1000, 2000, 4000];
 
 /**
- * Read the port from the plugin's mcp-port.txt file.
+ * Read the local connection credentials from the plugin's mcp-port.txt file.
  * Scans Revit Addins folders from newest to oldest year.
- * Falls back to 8080 if no valid port file is found.
  */
-function readPortFromFile(): number {
+interface RevitConnectionInfo {
+  port: number;
+  token: string;
+}
+
+function readConnectionInfo(): RevitConnectionInfo {
   const appData = process.env.APPDATA || "";
   const years = ["2027", "2026", "2025", "2024", "2023"];
   for (const year of years) {
     const portFile = join(appData, "Autodesk", "Revit", "Addins", year, "revit_mcp_plugin", "mcp-port.txt");
     if (existsSync(portFile)) {
       try {
-        const port = parseInt(readFileSync(portFile, "utf-8").trim(), 10);
-        if (port >= 8080 && port <= 8089) return port;
+        const value = JSON.parse(readFileSync(portFile, "utf-8"));
+        if (
+          typeof value?.port === "number" &&
+          value.port >= 8080 &&
+          value.port <= 8089 &&
+          typeof value?.token === "string" &&
+          value.token.length >= 32
+        ) {
+          return { port: value.port, token: value.token };
+        }
       } catch { /* ignore, try next */ }
     }
   }
-  return 8080;
+
+  throw new Error(
+    "Cannot find valid Revit MCP connection credentials. Restart Revit after installing the matching plugin."
+  );
 }
 
 /**
@@ -35,10 +50,11 @@ function readPortFromFile(): number {
  */
 async function attemptConnection<T>(
   port: number,
+  token: string,
   operation: (client: RevitClientConnection) => Promise<T>,
   timeoutMs: number
 ): Promise<T> {
-  const revitClient = new RevitClientConnection("localhost", port);
+  const revitClient = new RevitClientConnection("localhost", port, token);
   revitClient.defaultTimeout = timeoutMs;
 
   try {
@@ -98,12 +114,11 @@ export async function withRevitConnection<T>(
   });
   await previousMutex;
 
-  const port = readPortFromFile();
-
   try {
+    const { port, token } = readConnectionInfo();
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
       try {
-        return await attemptConnection(port, operation, timeoutMs);
+        return await attemptConnection(port, token, operation, timeoutMs);
       } catch (error: any) {
         const msg = error?.message || "";
         const isConnectionError =

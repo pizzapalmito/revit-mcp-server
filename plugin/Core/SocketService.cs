@@ -2,6 +2,7 @@
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using Autodesk.Revit.UI;
@@ -23,6 +24,7 @@ namespace revit_mcp_plugin.Core
         private Thread _listenerThread;
         private volatile bool _isRunning;
         private int _port = 8080;
+        private string _sessionToken;
         private int _activeClientCount;
         private const int MaxConcurrentClients = 4;
         private const int MaxRequestCharacters = 1024 * 1024;
@@ -112,14 +114,43 @@ namespace revit_mcp_plugin.Core
             return -1;
         }
 
-        private void WritePortFile(int port)
+        private static string CreateSessionToken()
+        {
+            var tokenBytes = new byte[32];
+            using (var random = RandomNumberGenerator.Create())
+            {
+                random.GetBytes(tokenBytes);
+            }
+
+            return Convert.ToBase64String(tokenBytes);
+        }
+
+        private static bool TokensMatch(string expected, string actual)
+        {
+            if (string.IsNullOrEmpty(expected) || string.IsNullOrEmpty(actual))
+                return false;
+
+            var expectedBytes = Encoding.UTF8.GetBytes(expected);
+            var actualBytes = Encoding.UTF8.GetBytes(actual);
+            if (expectedBytes.Length != actualBytes.Length)
+                return false;
+
+            var difference = 0;
+            for (var i = 0; i < expectedBytes.Length; i++)
+                difference |= expectedBytes[i] ^ actualBytes[i];
+
+            return difference == 0;
+        }
+
+        private void WritePortFile(int port, string sessionToken)
         {
             try
             {
                 string pluginDir = Path.GetDirectoryName(typeof(SocketService).Assembly.Location);
                 string portFilePath = Path.Combine(pluginDir, "mcp-port.txt");
-                File.WriteAllText(portFilePath, port.ToString());
-                McpLogger.Info("SocketService", $"Port file written to {portFilePath} with port {port}");
+                var connectionInfo = new { port, token = sessionToken };
+                File.WriteAllText(portFilePath, JsonConvert.SerializeObject(connectionInfo));
+                McpLogger.Info("SocketService", $"Port file written to {portFilePath}");
             }
             catch (Exception ex)
             {
@@ -169,13 +200,14 @@ namespace revit_mcp_plugin.Core
                 }
 
                 _port = port;
+                _sessionToken = CreateSessionToken();
 
                 if (port != 8080)
                 {
                     McpLogger.Warn("SocketService", $"Port 8080 was not available, falling back to port {port}");
                 }
 
-                WritePortFile(port);
+                WritePortFile(port, _sessionToken);
 
                 _listener = new TcpListener(IPAddress.Loopback, port);
                 _listener.Start();
@@ -344,7 +376,15 @@ namespace revit_mcp_plugin.Core
             try
             {
                 // Parse JSON-RPC requests.
-                request = JsonConvert.DeserializeObject<JsonRPCRequest>(requestJson);
+                var requestObject = JObject.Parse(requestJson);
+                var requestToken = requestObject.Value<string>("authToken");
+                if (!TokensMatch(_sessionToken, requestToken))
+                {
+                    return CreateErrorResponse(null, JsonRPCErrorCodes.InvalidRequest,
+                        "Unauthorized local MCP request");
+                }
+
+                request = requestObject.ToObject<JsonRPCRequest>();
 
                 // Verify that the request format is valid.
                 if (request == null || !request.IsValid())
